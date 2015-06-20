@@ -1,38 +1,58 @@
--- if problems have commas
---   then split at commas
--- otherwise
---   return the problems (single set)
---                  |
---                  v
--- loop through sets in split problems
--- evaluate # of problems in set
--- increment total # of problems
--- return total
+import Control.Monad   (forever)
+import Data.Char       (isDigit)
+import Data.List       (isInfixOf)
+import Data.List.Split (splitOn)
 
--- NOTES:
--- Use `read` function
+contains :: String -> String -> Bool
+contains text query = query `isInfixOf` text
 
---------------------------------------------------
+splitIntoSets :: String -> [String]
+splitIntoSets problems = if problems `contains` ", "
+                           then splitOn ", " problems
+                           else [problems]
 
--- Correct output = 18
-example = "2, 2, 3-6, 7-11 odd, 12-16 even, 17-27 eoo, 28-38 eoe"
+dissectSet :: String -> (Int, Int, String)
+dissectSet set
+  | not $ set `contains` "-" = (0, 0, "single")
+  | otherwise = (read x, read y, m)
+    where x = head $ splitOn "-" set
+          y = if set `contains` " "
+                then splitOn "-" (head $ splitOn " " set) !! 1
+                else splitOn "-" set !! 1
+          m = if set `contains` " "
+                then splitOn " " set !! 1
+                else "all"
 
--- | Splits raw text input into rough problem sets at commas
-splitAtCommas :: String -> [String]
-splitAtCommas x = x
+verifySet :: (Int, Int, String) -> Bool
+verifySet (x, y, m) =
+  all (==True) [ m `elem` ["all", "even", "odd", "eoe", "eoo", "single"]
+               , x > 0
+               , y > x
+               ]
 
--- | Dissects a given problem set into their individual parts in triples:
---   (start, end, modifier)
-dissectSet :: [String] -> [(Int, Int, String)]
-dissectSet x = x
+evaluateSet :: (Int, Int, String) -> Int
+evaluateSet (x, y, m)
+  | m == "all" && (y - x) > 999 = (y - x) + 1  -- because math is faster
+  | m == "all"                  = length [x..y]
+  | m == "even" || m == "odd"   = length [x,x+2..correctY 2]
+  | m == "eoe"  || m == "eoo"   = length [x,x+4..correctY 4]
+  | m == "single"               = 1
+  | otherwise                   = 0 -- TODO: Throw error
+    -- Corrects for invalid y value in eoe and eoo. For example,
+    -- "32-64 eoe" is not valid, because the set ends at 62.
+    where correctY offset = y - ((y - x) `mod` offset)
 
--- | Calculate number of problems in a given set and add them all up,
---   returning a total
-evaluateSet :: -- I dunno
-evaluateSet x = x
+verifyProblems :: String -> Bool
+verifyProblems problems =
+  all (==True) $ map (verifySet . dissectSet) (splitIntoSets problems)
+
+countProblems :: String -> Int
+countProblems problems = sum $ map (evaluateSet . dissectSet) (splitIntoSets problems)
 
 main :: IO ()
-main = do
+main = forever $ do
+  putStrLn "Input problems: "
   input <- getLine
-  putStrLn input
-
+  if verifyProblems input
+    then putStrLn $ "Total problems: " ++ show (countProblems input) ++ "\n"
+    else error "Invalid input"
