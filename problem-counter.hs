@@ -1,5 +1,4 @@
 import Control.Monad   (forever)
-import Data.Char       (isDigit)
 import Data.List       (isInfixOf)
 import Data.List.Split (splitOn)
 
@@ -24,6 +23,7 @@ dissectSet set
                 else "all"
 
 verifySet :: (Int, Int, String) -> Bool
+verifySet (0, 0, "single") = True
 verifySet (x, y, m) =
   all (==True) [ m `elem` ["all", "even", "odd", "eoe", "eoo", "single"]
                , x > 0
