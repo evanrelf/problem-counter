@@ -1,3 +1,5 @@
+module Main where
+
 import Data.List       (isInfixOf)
 import Data.List.Split (splitOn)
 
@@ -12,9 +14,8 @@ text `contains` query = query `isInfixOf` text
 
 -- | Splits RawProblems into a list of RawProblemSets at any commas
 splitIntoSets :: RawProblems -> [RawProblemSet]
-splitIntoSets problems = if problems `contains` ", "
-                           then splitOn ", " problems
-                           else [problems]
+splitIntoSets problems | problems `contains` ", " = splitOn ", " problems
+                       | otherwise                = [problems]
 
 -- | Splits a RawProblemSet into a ProblemSet
 dissectSet :: RawProblemSet -> ProblemSet
@@ -22,12 +23,10 @@ dissectSet set
   | not $ set `contains` "-" = (0, 0, "single")
   | otherwise = (read x, read y, m)
     where x = head $ splitOn "-" set
-          y = if set `contains` " "
-                then splitOn "-" (head $ splitOn " " set) !! 1
-                else splitOn "-" set !! 1
-          m = if set `contains` " "
-                then splitOn " " set !! 1
-                else "all"
+          y | set `contains` " " = splitOn "-" (head $ splitOn " " set) !! 1
+            | otherwise          = splitOn "-" set !! 1
+          m | set `contains` " " = splitOn " " set !! 1
+            | otherwise          = "all"
 
 -- | Verifies that a ProblemSet is valid according to a list of conditions
 verifySet :: ProblemSet -> Bool
@@ -35,8 +34,7 @@ verifySet (_, _, "single") = True
 verifySet (x, y, m) =
   all (==True) [ m `elem` ["all", "even", "odd", "eoe", "eoo", "single"]
                , x > 0
-               , y > x
-               ]
+               , y > x ]
 
 -- | Determines the number of problems in a ProblemSet
 evaluateSet :: ProblemSet -> Total
@@ -45,7 +43,7 @@ evaluateSet (x, y, m)
   | m == "even" || m == "odd"   = ((correctY 2 - x) `div` 2) + 1
   | m == "eoe"  || m == "eoo"   = ((correctY 4 - x) `div` 4) + 1
   | m == "single"               = 1
-  | otherwise                   = 0  -- If somehow `verifyProblems` fails
+  | otherwise                   = 0  -- If somehow `verifyProblems` fails...
     -- Corrects for invalid y value with "eoe" and "eoo" modifiers. For
     -- example, "34-64 eoe" is not valid, because the set ends at 62.
     where correctY offset = y - ((y - x) `mod` offset)
@@ -69,5 +67,6 @@ main = do
   if verifyProblems input
     then do
       putStrLn $ "Total problems: " ++ show (countProblems input) ++ "\n"
-      main
+      main -- Loop indefinitely
     else error "Invalid input"
+
