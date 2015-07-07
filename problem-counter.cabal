@@ -1,0 +1,18 @@
+name:                problem-counter
+version:             0.1.0.0
+synopsis:            Math homework problem counter
+homepage:            https://github.com/evanrelf/problem-counter
+license:             MIT
+license-file:        LICENSE
+author:              Evan Relf
+maintainer:          evan@evanrelf.com
+category:            Math
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+executable problem-counter
+  main-is:             ProblemCounter.hs
+  build-depends:       base >=4.8 && <4.9
+                       split >= 0.2 && <0.3
+  default-language:    Haskell2010
