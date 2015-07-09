@@ -2,6 +2,7 @@ module Main where
 
 import Data.List       (isInfixOf)
 import Data.List.Split (splitOn)
+import System.IO       (hFlush, stdout)
 
 type RawProblems   = String
 type RawProblemSet = String
@@ -21,7 +22,7 @@ splitIntoSets problems | problems `contains` ", " = splitOn ", " problems
 dissectSet :: RawProblemSet -> ProblemSet
 dissectSet set
   | not $ set `contains` "-" = (0, 0, "single")
-  | otherwise = (read x, read y, m)
+  | otherwise                = (read x, read y, m)
     where x = head $ splitOn "-" set
           y | set `contains` " " = splitOn "-" (head $ splitOn " " set) !! 1
             | otherwise          = splitOn "-" set !! 1
@@ -39,11 +40,11 @@ verifySet (x, y, m) =
 -- | Determines the number of problems in a ProblemSet
 evaluateSet :: ProblemSet -> Total
 evaluateSet (x, y, m)
-  | m == "all"                  = (y - x) + 1
-  | m == "even" || m == "odd"   = ((correctY 2 - x) `div` 2) + 1
-  | m == "eoe"  || m == "eoo"   = ((correctY 4 - x) `div` 4) + 1
-  | m == "single"               = 1
-  | otherwise                   = 0  -- If somehow `verifyProblems` fails...
+  | m == "all"                = (y - x) + 1
+  | m == "even" || m == "odd" = ((correctY 2 - x) `div` 2) + 1
+  | m == "eoe"  || m == "eoo" = ((correctY 4 - x) `div` 4) + 1
+  | m == "single"             = 1
+  | otherwise                 = 0  -- If somehow `verifyProblems` fails...
     -- Corrects for invalid y value with "eoe" and "eoo" modifiers. For
     -- example, "34-64 eoe" is not valid, because the set ends at 62.
     where correctY offset = y - ((y - x) `mod` offset)
@@ -59,11 +60,17 @@ countProblems problems = sum $ map processSet sets
   where processSet = evaluateSet . dissectSet
         sets       = splitIntoSets problems
 
+-- | Prompts for and accepts user input on the same line
+-- Taken from http://stackoverflow.com/a/13190872
+prompt :: String -> IO String
+prompt text = do putStr text
+                 hFlush stdout
+                 getLine
+
 -- | Interacts with the user (duh)
 main :: IO ()
 main = do
-  putStrLn "Input problems: "
-  input <- getLine
+  input <- prompt "Input problems: "
   if verifyProblems input
     then do
       putStrLn $ "Total problems: " ++ show (countProblems input) ++ "\n"

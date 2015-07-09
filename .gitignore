@@ -1,3 +1,21 @@
+# Mac
 .DS_Store
-*.hi
+
+# Haskell (from http://git.io/vq6it)
+dist
+cabal-dev
 *.o
+*.hi
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+.hpc
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+*.prof
+*.aux
+*.hp
+.stack-work/
+
