@@ -20,7 +20,7 @@ text `contains` query = query `isInfixOf` text
 -- | Splits user-inputted RawProblems into RawSets
 splitIntoSets :: RawProblems -> [RawSet]
 splitIntoSets problems | problems `contains` ", " = splitOn ", " problems
-                       | otherwise             = [problems]
+                       | otherwise                = [problems]
 
 -- | Determines the Modifier described by a string
 parseModifier :: String -> Modifier
