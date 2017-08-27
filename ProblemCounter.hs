@@ -34,8 +34,8 @@ matchModifier _      = error "Invalid modifier"
 -- | Parses a user-inputted RawSet to create a Set
 parse :: RawSet -> Set
 parse set
-  | not $ set `contains` "-" = (Set 0 0 Single)
-  | otherwise                = (Set x y m)
+  | not $ set `contains` "-" = Set 0 0 Single
+  | otherwise                = Set x y m
     where x = read . head . splitOn "-" $ set
           y | set `contains` " " = read $ splitOn "-" (head $ splitOn " " set) !! 1
             | otherwise          = read $ splitOn "-" set !! 1
