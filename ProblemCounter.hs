@@ -31,7 +31,6 @@ contains :: Eq a => [a] -> [a] -> Bool
 text `contains` query = query `isInfixOf` text
 
 -- | Removes duplicate elements from a list
--- [1, 1, 2, 3, 4, 1, 1, 5, 6, 3]
 dedupe :: Eq a => [a] -> [a]
 dedupe [] = []
 dedupe (x:xs) = x : dedupe (filter (/= x) xs)
@@ -50,7 +49,7 @@ matchModifier (x:xs) = read $ toUpper x : xs
 -- | Parses a user-inputted RawSet to create a Set
 parse :: RawSet -> Set
 parse set
-  | '-' `notElem` set = Set 0 0 Single
+  | '-' `notElem` set = Set ((read . head . words) set) 0 Single
   | otherwise = Set x y m
   where
     x = (read . head . splitOn "-") set
@@ -76,7 +75,7 @@ evaluate Set {x, y, m} =
       if odd x
         then filter odd [x,x + 4 .. y]
         else filter odd [x + 1,x + 5 .. y]
-    Single -> [1]
+    Single -> [x]
 
 -- | Determines the total number of problems in RawProblems
 total :: RawProblems -> Int
@@ -91,8 +90,40 @@ prompt text = do
   hFlush stdout
   getLine
 
+helpText :: String
+helpText =
+  "COMMANDS:\n\
+  \    :h    Help\n\
+  \    :q    Quit\n\
+  \\n\
+  \EXAMPLE INPUT:\n\
+  \    '1, 2, 3'\n\
+  \    '1-20, 21-31 odd'\n\
+  \    '5, 6-22 eoe, 30-50 even, 51, 52'\n\
+  \\n\
+  \PROBLEM SET MODIFIERS:\n\
+  \    all (implicit default)\n\
+  \    even\n\
+  \    odd\n\
+  \    eoe ('every other even')\n\
+  \    eoo ('every other odd')\n"
+
+problemCounter :: IO ()
+problemCounter = do
+  input <- prompt "> "
+  if head input == ':'
+    then case tail input of
+           "q" -> putStrLn "Quitting...\n"
+           "h" -> do
+             putStrLn helpText
+             problemCounter
+           _ -> do
+             putStrLn "ERROR: Invalid command\n"
+             problemCounter
+    else let result = show $ total input
+         in putStrLn $ "Total problems: " ++ result ++ "\n"
+
 main :: IO ()
 main = do
-  input <- prompt "Input problems: "
-  let result = show $ total input
-  putStrLn $ "Total problems: " ++ result ++ "\n"
+  putStrLn "Type :h for help, :q to quit"
+  problemCounter
