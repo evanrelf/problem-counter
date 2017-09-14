@@ -79,8 +79,7 @@ evaluate Set {x, y, m} =
 
 -- | Determines the total number of problems in RawProblems
 total :: RawProblems -> Int
-total problems =
-  length $ (dedupe . concat) $ map (evaluate . parse) (splitIntoSets problems)
+total = length . dedupe . concatMap (evaluate . parse) . splitIntoSets
 
 -- | `getLine` on the same line as the prompt message
 -- Credit: https://stackoverflow.com/a/13190872/1664444
