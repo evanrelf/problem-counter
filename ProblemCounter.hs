@@ -1,126 +1,104 @@
-{-# LANGUAGE NamedFieldPuns #-}
+import Data.Char (toLower, toUpper)
+import Data.List (dropWhileEnd)
+import System.Exit (exitSuccess)
+import Text.Regex (mkRegex, splitRegex, subRegex)
 
-import Data.Char (toUpper)
-import Data.List (isInfixOf)
-import Data.List.Split (splitOn)
-import System.IO (hFlush, stdout)
+type InputString = String
 
-type RawProblems = String
+type SanitizedString = String
 
-type RawSet = String
-
-type RawModifier = String
+type SetString = String
 
 data Modifier
   = All
   | Even
   | Odd
-  | Eoe -- ^ Every other even
-  | Eoo -- ^ Every other odd
+  | Eoe
+  | Eoo
   | Single
-  deriving (Eq, Show, Read)
+  deriving (Show, Read)
 
-data Set = Set
-  { x :: Int -- ^ Beginning of set
-  , y :: Int -- ^ End of set
-  , m :: Modifier -- ^ Set modifier
-  } deriving (Eq, Show)
+data Set =
+  Set (Int, Int)
+      Modifier
+  deriving (Show)
 
--- | Alias of `isInfixOf`
-contains :: Eq a => [a] -> [a] -> Bool
-text `contains` query = query `isInfixOf` text
-
--- | Removes duplicate elements from a list
-dedupe :: Eq a => [a] -> [a]
+dedupe :: (Eq a) => [a] -> [a]
 dedupe [] = []
 dedupe (x:xs) = x : dedupe (filter (/= x) xs)
 
--- | Splits user-inputted RawProblems into RawSets
-splitIntoSets :: RawProblems -> [RawSet]
-splitIntoSets problems
-  | problems `contains` ", " = splitOn ", " problems
-  | otherwise = [problems]
+takeFirstWhile :: (a -> Bool) -> [a] -> [a]
+takeFirstWhile b = takeWhile b . dropWhile (not . b)
 
--- | Determines the Modifier described by a string
-matchModifier :: RawModifier -> Modifier
-matchModifier "" = error "Zero-length modifier"
-matchModifier (x:xs) = read $ toUpper x : xs
-
--- | Parses a user-inputted RawSet to create a Set
-parse :: RawSet -> Set
-parse set
-  | '-' `notElem` set = Set ((read . head . words) set) 0 Single
-  | otherwise = Set x y m
+sanitize :: InputString -> SanitizedString
+sanitize =
+  map toLower .
+  cleanDashes .
+  cleanCommas . shortenWhitespace . removePadding . removeInvalidChars
   where
-    x = (read . head . splitOn "-") set
-    y
-      | ' ' `elem` set = read $ splitOn "-" (head $ words set) !! 1
-      | otherwise = read $ splitOn "-" set !! 1
-    m
-      | ' ' `elem` set = matchModifier $ words set !! 1
-      | otherwise = All
+    removeInvalidChars x = subRegex (mkRegex "[^[:alnum:] -]") x ""
+    removePadding = dropWhileEnd (== ' ') . dropWhile (== ' ')
+    shortenWhitespace x = subRegex (mkRegex "[[:space:]]+") x " "
+    cleanCommas x = subRegex (mkRegex "[[:space:]]*,[[:space:]]*") x ", "
+    cleanDashes x = subRegex (mkRegex "[^[:digit:]]*-[^[:digit:]]*") x "-"
 
--- | Calculates which problem numbers are in a set
-evaluate :: Set -> [Int]
-evaluate Set {x, y, m} =
+splitIntoSets :: SanitizedString -> [SetString]
+splitIntoSets = filter (/= "") . splitRegex (mkRegex ",")
+
+readSet :: SetString -> Set
+readSet set
+  | '-' `notElem` set = Set (x, x) Single
+  | ' ' `notElem` set = Set (x, y) All
+  | otherwise = Set (x, y) m
+  where
+    x = (read . takeFirstWhile (`elem` ['0' .. '9'])) set
+    y = (read . tail . dropWhile (/= '-') . head . words) set
+    m = (read . (\(c:cs) -> toUpper c : cs) . last . words) set
+
+evaluateSet :: Set -> [Int]
+evaluateSet (Set (x, y) m) =
   case m of
     All -> [x .. y]
-    Even -> filter even [x .. y]
-    Odd -> filter odd [x .. y]
-    Eoe ->
-      if even x
-        then filter even [x,x + 4 .. y]
-        else filter even [x + 1,x + 5 .. y]
-    Eoo ->
-      if odd x
-        then filter odd [x,x + 4 .. y]
-        else filter odd [x + 1,x + 5 .. y]
+    Even -> evens
+    Odd -> odds
+    Eoe -> everyOther evens
+    Eoo -> everyOther evens
     Single -> [x]
+  where
+    evens = filter even [x .. y]
+    odds = filter odd [x .. y]
+    everyOther xs = [xs !! i | i <- [0,2 .. length xs - 1]]
 
--- | Determines the total number of problems in RawProblems
-total :: RawProblems -> Int
-total = length . dedupe . concatMap (evaluate . parse) . splitIntoSets
-
--- | `getLine` on the same line as the prompt message
--- Credit: https://stackoverflow.com/a/13190872/1664444
-prompt :: String -> IO String
-prompt text = do
-  putStr text
-  hFlush stdout
-  getLine
+count :: InputString -> Int
+count =
+  length . dedupe . concatMap (evaluateSet . readSet) . splitIntoSets . sanitize
 
 helpText :: String
 helpText =
-  "COMMANDS:\n\
-  \    :h    Help\n\
-  \    :q    Quit\n\
-  \\n\
-  \EXAMPLE INPUT:\n\
-  \    '1, 2, 3'\n\
-  \    '1-20, 21-31 odd'\n\
-  \    '5, 6-22 eoe, 30-50 even, 51, 52'\n\
+  "EXAMPLE INPUT:\n\
+  \    - '1, 2, 3' => 3\n\
+  \    - '1-20, 21-31 odd' => 26\n\
+  \    - '5, 6-22 even, 30-60 eoe, 51, 52' => 20\n\
   \\n\
   \PROBLEM SET MODIFIERS:\n\
-  \    all (implicit default)\n\
-  \    even\n\
-  \    odd\n\
-  \    eoe ('every other even')\n\
-  \    eoo ('every other odd')\n"
+  \    - all (default when no modifier specified)\n\
+  \    - even\n\
+  \    - odd\n\
+  \    - eoe (every other even)\n\
+  \    - eoo (every other odd)\n"
 
 problemCounter :: IO ()
 problemCounter = do
-  input <- prompt "> "
+  putStr "> "
+  input <- getLine
   if head input == ':'
     then case tail input of
-           "q" -> putStrLn "Quitting...\n"
-           "h" -> do
-             putStrLn helpText
-             problemCounter
-           _ -> do
-             putStrLn "ERROR: Invalid command\n"
-             problemCounter
-    else let result = show $ total input
-         in putStrLn $ "Total problems: " ++ result ++ "\n"
+           "q" -> exitSuccess
+           "h" -> putStrLn helpText
+           _ -> putStrLn "ERROR: Invalid command\n"
+    else let result = count input
+         in putStrLn $ "Total problems: " ++ show result ++ "\n"
+  problemCounter
 
 main :: IO ()
 main = do
