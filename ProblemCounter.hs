@@ -5,8 +5,6 @@ import Text.Regex (mkRegex, splitRegex, subRegex)
 
 type InputString = String
 
-type SanitizedString = String
-
 type SetString = String
 
 data Modifier
@@ -30,19 +28,7 @@ dedupe (x:xs) = x : dedupe (filter (/= x) xs)
 takeFirstWhile :: (a -> Bool) -> [a] -> [a]
 takeFirstWhile b = takeWhile b . dropWhile (not . b)
 
-sanitize :: InputString -> SanitizedString
-sanitize =
-  map toLower .
-  cleanDashes .
-  cleanCommas . shortenWhitespace . removePadding . removeInvalidChars
-  where
-    removeInvalidChars x = subRegex (mkRegex "[^[:alnum:] -]") x ""
-    removePadding = dropWhileEnd (== ' ') . dropWhile (== ' ')
-    shortenWhitespace x = subRegex (mkRegex "[[:space:]]+") x " "
-    cleanCommas x = subRegex (mkRegex "[[:space:]]*,[[:space:]]*") x ", "
-    cleanDashes x = subRegex (mkRegex "[^[:digit:]]*-[^[:digit:]]*") x "-"
-
-splitIntoSets :: SanitizedString -> [SetString]
+splitIntoSets :: InputString -> [SetString]
 splitIntoSets = filter (/= "") . splitRegex (mkRegex ",")
 
 readSet :: SetString -> Set
@@ -71,7 +57,7 @@ evaluateSet (Set (x, y) m) =
 
 count :: InputString -> Int
 count =
-  length . dedupe . concatMap (evaluateSet . readSet) . splitIntoSets . sanitize
+  length . dedupe . concatMap (evaluateSet . readSet) . splitIntoSets
 
 helpText :: String
 helpText =
