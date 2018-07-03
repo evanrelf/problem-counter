@@ -1,6 +1,9 @@
+module Main where
+
 import Data.Char (toLower, toUpper)
 import Data.List (dropWhileEnd)
 import System.Exit (exitSuccess)
+import System.IO (hFlush, stdout)
 import Text.Regex (mkRegex, splitRegex, subRegex)
 
 type InputString = String
@@ -76,6 +79,7 @@ helpText =
 problemCounter :: IO ()
 problemCounter = do
   putStr "> "
+  hFlush stdout
   input <- getLine
   if head input == ':'
     then case tail input of
