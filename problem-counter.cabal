@@ -1,21 +1,27 @@
-name:                problem-counter
-version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/evanrelf/problem-counter
-license:             LGPLv3
-license-file:        LICENSE
-author:              Evan Relf <evan@evanrelf.com>
-maintainer:          Evan Relf <evan@evanrelf.com>
-copyright:           2018 Evan Relf
-category:            Math
-build-type:          Simple
-cabal-version:       >=1.10
-extra-source-files:  README.md
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 8e5e58d66d3d8ad852e26cec481a1c7011a56b7d9d7eb88eb69e70ea7a3522e1
 
-executable problem-counter
-  hs-source-dirs:      src
-  main-is:             Main.hs
-  default-language:    Haskell2010
-  build-depends:       base >= 4.7 && < 5
-                     , regex-compat
+name:           problem-counter
+version:        0.1.0.0
+category:       Math
+homepage:       https://gitlab.com/evanrelf/problem-counter
+author:         Evan Relf <evan@evanrelf.com>
+copyright:      2018 Evan Relf
+license:        LGPLv3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+executable bikeshed-server
+  main-is: Main.hs
+  other-modules:
+      Paths_problem_counter
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , regex-compat
+  default-language: Haskell2010
