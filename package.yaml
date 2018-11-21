@@ -1,14 +1,14 @@
 name:                problem-counter
-version:             0.1.0.0
+version:             0.2.0
 author:              Evan Relf <evan@evanrelf.com>
 homepage:            https://gitlab.com/evanrelf/problem-counter
-license:             LGPLv3
+license:             MIT
 copyright:           2018 Evan Relf
 category:            Math
 
 dependencies:
   - base >= 4.7 && < 5
-  - regex-compat
+  - megaparsec
 
 executables:
   bikeshed-server:

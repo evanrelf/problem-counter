@@ -1,19 +1,20 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8e5e58d66d3d8ad852e26cec481a1c7011a56b7d9d7eb88eb69e70ea7a3522e1
+-- hash: 13695121ba281970fe7e7c872706c2156bb79bbc32f1f0eafd62a1a5ffb44d08
 
 name:           problem-counter
-version:        0.1.0.0
+version:        0.2.0
 category:       Math
 homepage:       https://gitlab.com/evanrelf/problem-counter
 author:         Evan Relf <evan@evanrelf.com>
 copyright:      2018 Evan Relf
-license:        LGPLv3
+license:        MIT
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
 
 executable bikeshed-server
   main-is: Main.hs
@@ -23,5 +24,5 @@ executable bikeshed-server
       src
   build-depends:
       base >=4.7 && <5
-    , regex-compat
+    , megaparsec
   default-language: Haskell2010
