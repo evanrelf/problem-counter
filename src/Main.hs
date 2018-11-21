@@ -1,13 +1,12 @@
 module Main where
 
-import Data.Char (toUpper)
 import Data.List (nub)
+import System.IO (hFlush, stdout)
 import Text.Megaparsec (Parsec, optional, parse, some, try, (<|>))
 import Text.Megaparsec.Char (char, digitChar, space, string)
 
 data Modifier
-  = All
-  | Even
+  = Even
   | Odd
   | EveryOtherEven
   | EveryOtherOdd
@@ -24,7 +23,6 @@ type Parser = Parsec () String
 readModifier :: String -> Modifier
 readModifier s =
   case s of
-    "all" -> All
     "even" -> Even
     "odd" -> Odd
     "eoe" -> EveryOtherEven
@@ -33,8 +31,7 @@ readModifier s =
 
 modifier :: Parser Modifier
 modifier = do
-  m <- string "all"
-   <|> string "even"
+  m <- string "even"
    <|> string "odd"
    <|> string "eoe"
    <|> string "eoo"
@@ -47,10 +44,10 @@ single = do
 
 range :: Parser Problems
 range = do
-  x <- some digitChar
+  Single x <- single
   _ <- char '-'
   y <- some digitChar
-  return $ Range (read x) (read y)
+  return $ Range x (read y)
 
 modifiedRange :: Parser Problems
 modifiedRange = do
@@ -73,7 +70,6 @@ problemsToList (Single x) = [x]
 problemsToList (Range x y) = [x .. y]
 problemsToList (ModifiedRange x y m) =
   case m of
-    All -> [x .. y]
     Even -> filter even [x .. y]
     Odd -> filter odd [x .. y]
     EveryOtherEven -> everyOther $ filter even [x .. y]
@@ -82,9 +78,10 @@ problemsToList (ModifiedRange x y m) =
 
 problemCounter :: String -> String
 problemCounter s = either leftFn rightFn (parse someProblems "" s)
-  where leftFn x = "Error: " ++ show x
+  where leftFn x = "Error: Bad input\n\n" ++ show x
         rightFn x =
           "Problems: " ++ (show . length . nub . concatMap problemsToList $ x)
 
 main :: IO ()
-main = putStr "Enter problems: " >> getLine >>= putStrLn . problemCounter
+main = prompt "Enter problems: " >>= putStrLn . problemCounter
+  where prompt s = putStr s >> hFlush stdout >> getLine

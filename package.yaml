@@ -11,7 +11,7 @@ dependencies:
   - megaparsec
 
 executables:
-  bikeshed-server:
+  problem-counter:
     source-dirs:      src
     main:             Main.hs
 

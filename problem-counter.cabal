@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 13695121ba281970fe7e7c872706c2156bb79bbc32f1f0eafd62a1a5ffb44d08
+-- hash: 2964a3497c4a223acc1287013717a6c1f224375d7d1a128ef70954be37137f63
 
 name:           problem-counter
 version:        0.2.0
@@ -16,7 +16,7 @@ license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 
-executable bikeshed-server
+executable problem-counter
   main-is: Main.hs
   other-modules:
       Paths_problem_counter
