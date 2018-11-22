@@ -2,9 +2,11 @@ module Main where
 
 import Control.Applicative ((<*))
 import Data.List (nub)
+import Data.Void (Void)
 import System.IO (hFlush, stdout)
 import Text.Megaparsec (Parsec, eof, parse, sepBy, some, try, (<|>))
 import Text.Megaparsec.Char (char, digitChar, space, space1, string)
+import Text.Megaparsec.Error (parseErrorPretty')
 
 data Modifier
   = Even
@@ -19,14 +21,15 @@ data Problems
   | ModifiedRange Int Int Modifier
   deriving (Show)
 
-type Parser = Parsec () String
+type Parser = Parsec Void String
 
 int :: Parser Int
 int = read <$> some digitChar
 
 modifier :: Parser Modifier
-modifier = let f s v = string s >> return v in
-      f "even" Even
+modifier =
+  let f s v = string s >> return v
+  in  f "even" Even
   <|> f "odd" Odd
   <|> f "eoe" EveryOtherEven
   <|> f "eoo" EveryOtherOdd
@@ -70,11 +73,12 @@ problemsToList (ModifiedRange x y m) =
        EveryOtherOdd -> everyOther odds
 
 problemCounter :: String -> String
-problemCounter s = either leftFn rightFn (parse someProblems "" s)
-  where leftFn x = "Error: Bad input\n\n" <> show x
-        rightFn x =
-          "Problems: " <> (show . length . nub . concatMap problemsToList $ x)
+problemCounter s =
+  let count = length . nub . concatMap problemsToList
+      rightFn ps = "Problems: " <> show (count ps)
+  in either (parseErrorPretty' s) rightFn (parse someProblems "" s)
 
 main :: IO ()
-main = prompt "Enter problems: " >>= putStrLn . problemCounter
-  where prompt s = putStr s >> hFlush stdout >> getLine
+main =
+  let prompt s = putStr s >> hFlush stdout >> getLine
+  in prompt "Enter problems: " >>= putStrLn . problemCounter
