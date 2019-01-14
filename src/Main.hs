@@ -4,7 +4,7 @@ import Control.Applicative ((<*))
 import Data.List (nub)
 import Data.Void (Void)
 import System.IO (hFlush, stdout)
-import Text.Megaparsec (Parsec, eof, parse, sepBy, some, try, (<|>))
+import Text.Megaparsec (Parsec, eof, parse, sepBy1, some, try, (<|>))
 import Text.Megaparsec.Char (char, digitChar, space, space1, string)
 import Text.Megaparsec.Error (parseErrorPretty')
 
@@ -29,7 +29,7 @@ int = read <$> some digitChar
 modifier :: Parser Modifier
 modifier =
   let f s v = string s >> return v
-  in  f "even" Even
+   in f "even" Even
   <|> f "odd" Odd
   <|> f "eoe" EveryOtherEven
   <|> f "eoo" EveryOtherOdd
@@ -53,7 +53,7 @@ problems :: Parser Problems
 problems = try modifiedRange <|> try range <|> single
 
 someProblems :: Parser [Problems]
-someProblems = problems `sepBy` (char ',' >> space) <* eof
+someProblems = problems `sepBy1` (char ',' >> space) <* eof
 
 everyOther :: [a] -> [a]
 everyOther [] = []
