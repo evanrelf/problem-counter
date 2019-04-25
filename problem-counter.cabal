@@ -1,16 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2964a3497c4a223acc1287013717a6c1f224375d7d1a128ef70954be37137f63
+-- hash: a7fb42528108730b8d4df002625b4cb3a4a0b2c6ba2c17520d626bfed5a758ed
 
 name:           problem-counter
 version:        0.2.0
 category:       Math
 homepage:       https://gitlab.com/evanrelf/problem-counter
 author:         Evan Relf <evan@evanrelf.com>
+maintainer:     Evan Relf <evan@evanrelf.com>
 copyright:      2018 Evan Relf
 license:        MIT
 license-file:   LICENSE
