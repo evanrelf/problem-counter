@@ -1,6 +1,11 @@
 # Mac
 .DS_Store
 
+# PureScript
+output/
+.spago/
+.psc-ide-port
+
 # Haskell (from http://git.io/vq6it)
 dist
 cabal-dev
@@ -19,7 +24,3 @@ cabal.sandbox.config
 *.hp
 .stack-work/
 
-# PureScript
-output/
-.spago/
-.psc-ide-port

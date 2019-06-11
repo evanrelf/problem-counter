@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a7fb42528108730b8d4df002625b4cb3a4a0b2c6ba2c17520d626bfed5a758ed
+-- hash: 424bcdb7495053ab0e29211b78add24b0e26a4c9f4ae74de697a9517ee2c6ddc
 
 name:           problem-counter
 version:        0.2.0
@@ -13,8 +13,7 @@ homepage:       https://gitlab.com/evanrelf/problem-counter
 author:         Evan Relf <evan@evanrelf.com>
 maintainer:     Evan Relf <evan@evanrelf.com>
 copyright:      2018 Evan Relf
-license:        MIT
-license-file:   LICENSE
+license:        ISC
 build-type:     Simple
 
 executable problem-counter
