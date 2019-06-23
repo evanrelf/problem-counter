@@ -2,24 +2,30 @@
 .DS_Store
 
 # Haskell
-dist
-cabal-dev
-*.o
-*.hi
-*.chi
-*.chs.h
-*.dyn_o
-*.dyn_hi
-.hpc
-.hsenv
-.cabal-sandbox/
-cabal.sandbox.config
-*.prof
-*.aux
-*.hp
-.stack-work/
+haskell/**/dist/
+haskell/**/dist-newstyle/
+haskell/**/cabal-dev/
+haskell/**/*.o
+haskell/**/*.hi
+haskell/**/*.chi
+haskell/**/*.chs.h
+haskell/**/*.dyn_o
+haskell/**/*.dyn_hi
+haskell/**/.hpc
+haskell/**/.hsenv
+haskell/**/.cabal-sandbox/
+haskell/**/cabal.sandbox.config
+haskell/**/*.prof
+haskell/**/*.aux
+haskell/**/*.hp
+haskell/**/.stack-work/
 
 # PureScript
-output/
-.spago/
-.psc-ide-port
+purescript/**/output/
+purescript/**/.spago/
+purescript/**/.psc-ide-port
+
+# Rust
+rust/**/target/
+rust/**/Cargo.lock
+rust/**/*.rs.bk

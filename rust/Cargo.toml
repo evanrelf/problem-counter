@@ -1,0 +1,8 @@
+[package]
+name = "problem-counter"
+version = "0.0.0"
+authors = ["Evan Relf <evan@evanrelf.com>"]
+edition = "2018"
+
+[dependencies]
+nom = "4.2.3"
