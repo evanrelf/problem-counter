@@ -1,7 +1,7 @@
 # Mac
 .DS_Store
 
-# Haskell (from http://git.io/vq6it)
+# Haskell
 dist
 cabal-dev
 *.o
