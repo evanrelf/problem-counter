@@ -1,84 +1,117 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Main (main) where
 
-import Control.Applicative ((<*))
+import Data.Foldable (asum)
+import Data.Functor (($>))
 import Data.List (nub)
 import Data.Void (Void)
 import System.IO (hFlush, stdout)
 import Text.Megaparsec (Parsec, eof, parse, sepBy1, some, try, (<|>))
 import Text.Megaparsec.Char (char, digitChar, space, space1, string)
-import Text.Megaparsec.Error (parseErrorPretty')
+import Text.Megaparsec.Error (errorBundlePretty)
+
 
 data Modifier
   = Even
   | Odd
   | EveryOtherEven
   | EveryOtherOdd
-  deriving (Show)
+  deriving Show
+
 
 data Problems
   = Single Int
   | Range Int Int
   | ModifiedRange Int Int Modifier
-  deriving (Show)
+  deriving Show
+
 
 type Parser = Parsec Void String
+
 
 int :: Parser Int
 int = read <$> some digitChar
 
+
 modifier :: Parser Modifier
-modifier =
-  let f s v = string s >> return v
-   in f "even" Even
-  <|> f "odd" Odd
-  <|> f "eoe" EveryOtherEven
-  <|> f "eoo" EveryOtherOdd
+modifier = asum
+  [ string "even" $> Even
+  , string "odd" $> Odd
+  , string "eoe" $> EveryOtherEven
+  , string "eoo" $> EveryOtherOdd
+  ]
+
 
 single :: Parser Problems
 single = Single <$> int
 
+
 range :: Parser Problems
 range = do
-  Single x <- single
+  x <- int
   _ <- char '-'
-  Range x <$> int
+  y <- int
+  pure (Range x y)
+
 
 modifiedRange :: Parser Problems
 modifiedRange = do
   Range x y <- range
   _ <- space1
-  ModifiedRange x y <$> modifier
+  m <- modifier
+  pure (ModifiedRange x y m)
+
 
 problems :: Parser Problems
 problems = try modifiedRange <|> try range <|> single
 
+
 someProblems :: Parser [Problems]
-someProblems = problems `sepBy1` (char ',' >> space) <* eof
+someProblems = problems `sepBy1` (char ',' *> space) <* eof
+
 
 everyOther :: [a] -> [a]
 everyOther [] = []
 everyOther [x] = [x]
-everyOther (x:_:xs) = x : everyOther xs
+everyOther (x : _ : xs) = x : everyOther xs
+
 
 problemsToList :: Problems -> [Int]
-problemsToList (Single x) = [x]
-problemsToList (Range x y) = [x .. y]
-problemsToList (ModifiedRange x y m) =
-  let evens = filter even [x .. y]
+problemsToList = \case
+  Single x -> [x]
+  Range x y -> [x .. y]
+  ModifiedRange x y m ->
+    let
+      evens = filter even [x .. y]
       odds = filter odd [x .. y]
-  in case m of
-       Even -> evens
-       Odd -> odds
-       EveryOtherEven -> everyOther evens
-       EveryOtherOdd -> everyOther odds
+    in
+      case m of
+        Even -> evens
+        Odd -> odds
+        EveryOtherEven -> everyOther evens
+        EveryOtherOdd -> everyOther odds
+
+
+countProblems :: [Problems] -> Int
+countProblems = length . nub . concatMap problemsToList
+
 
 problemCounter :: String -> String
-problemCounter s =
-  let count = length . nub . concatMap problemsToList
-      rightFn ps = "Problems: " <> show (count ps)
-  in either (parseErrorPretty' s) rightFn (parse someProblems "" s)
+problemCounter input =
+  case parse someProblems "" input of
+    Left errorBundle -> errorBundlePretty errorBundle
+    Right ps -> "Problems: " <> show (countProblems ps)
+
+
+prompt :: String -> IO String
+prompt s = do
+  putStr s
+  hFlush stdout
+  getLine
+
 
 main :: IO ()
-main =
-  let prompt s = putStr s >> hFlush stdout >> getLine
-  in prompt "Enter problems: " >>= putStrLn . problemCounter
+main = do
+  input <- prompt "Enter problems: "
+  putStrLn (problemCounter input)

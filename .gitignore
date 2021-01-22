@@ -2,7 +2,8 @@
 .DS_Store
 
 # Haskell
-dist
+dist/
+dist-newstyle/
 cabal-dev
 *.o
 *.hi
